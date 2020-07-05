@@ -25,8 +25,9 @@ public class DESmy
 
 
   public static void main(String[] args) throws Exception {
-    
-    byte[] key = new DESmy().getKey();
+   // Security.addProvider(new com.sun.crypto.provider.SunJCE());  
+    //byte[] key = new DESmy().getKey();
+    byte[] key = Base64.decodeBase64("fCxoaBZCm7D8KaxbLsg+Aw==");
     System.out.println(Base64.encodeBase64String(key));
 
 
@@ -34,14 +35,31 @@ public class DESmy
     byte[] paramArrayOfByte = {49,50,51};
     byte[] en = ((DESmy)localObject).encrypt(paramArrayOfByte);
     System.out.println(en);
-    byteToHex(en);
+    System.out.println(byte2Hex(en));
     System.out.println(Base64.encodeBase64String(en));
-    byte[] enen = Base64.decodeBase64("CYLbffJvyoo=");
+    byte[] enen = Base64.decodeBase64("b78X/dli9XwZQ9bRAOtxONy/MOOEHu7OVLCDrmjwlAjMneFHhZy3BEd0eqvsWQNm3OiSva6rjJ3eaQcG4JBCBtPg7XQGI0jfSXH4FRMUWDrBkVBcA5WYm5/tS041frpJL+SCIFE1eEwXIBXsVbj2vdrbKbpD+eDn");
+    System.out.println(byte2Hex(enen));
+    System.out.println(enen);
     byte[] de = ((DESmy)localObject).decrypt(enen);
     System.out.println(Base64.encodeBase64String(de));
-    System.out.println(de.toString().getBytes("utf-8"));
+    //System.out.println(de.toString().getBytes("utf-8"));
     
   }
+  //转换成十六进制字符串  
+  public static String byte2Hex(byte[] b){  
+    String hs="";  
+    String stmp="";  
+    for(int n=0; n<b.length; n++){  
+    stmp = (java.lang.Integer.toHexString(b[n]& 0XFF));  
+    if(stmp.length()==1){  
+    hs = hs + "0" + stmp;  
+    }else{  
+    hs = hs + stmp;  
+    }  
+    if(n<b.length-1)hs=hs+":";  
+    }  
+    return hs.toUpperCase();  
+    }  
 
   public static void byteToHex(byte[] qKeyBytes){  
     for (int i = 0; i < qKeyBytes.length; i++) {
