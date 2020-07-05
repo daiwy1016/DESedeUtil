@@ -18,7 +18,7 @@ public class DESedeUtil {
 	 * Java 6支持PKCS5Padding填充方式
 	 * Bouncy Castle支持PKCS7Padding填充方式
 	 */
-	private static final String CIPHER_ALGORITHM = "DESede/ECB/PKCS5Padding";//DESede/ECB/PKCS5Padding
+	private static final String CIPHER_ALGORITHM = "DESede/CBC/PKCS7Padding";//DESede/ECB/PKCS5Padding
 	
 	
 	
@@ -51,7 +51,7 @@ public class DESedeUtil {
     public static String encrypt(String source, String key) throws Exception {
         byte[] sourceBytes = source.getBytes("UTF-8");
     	byte[] keyBytes = Base64.decodeBase64(key);
-    	Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+    	Cipher cipher = Cipher.getInstance("DESede/CBC/PKCS7Padding");//Cipher.getInstance(CIPHER_ALGORITHM,"BC");
     	cipher.init(Cipher.ENCRYPT_MODE,new SecretKeySpec(keyBytes, KEY_ALGORITHM));
     	byte[] decrypted = cipher.doFinal(sourceBytes);
     	return Base64.encodeBase64String(decrypted);
@@ -75,6 +75,19 @@ public class DESedeUtil {
     	return new String(decoded, "UTF-8");
     }
    
+	
+/** 
+ * 字节转十六进制 
+ * @param b 需要进行转换的byte字节 
+ * @return  转换后的Hex字符串 
+ */  
+public static String byteToHex(byte b){  
+    String hex = Integer.toHexString(b & 0xFF);  
+    if(hex.length() < 2){  
+        hex = "0" + hex;  
+    }  
+    return hex;  
+} 
 /** 
  * Hex字符串转byte 
  * @param inHex 待转换的Hex字符串 
@@ -109,7 +122,9 @@ public static byte[] hexToByteArray(String inHex){
     	try {
 			//test
 			byte[] de = hexToByteArray("7c2c686816429bb0fc29ac5b2ec83e03");
-
+			byte b = 0x18;
+			String hexde = byteToHex(de[0]);
+			System.out.println(hexde);
 			String s = Base64.encodeBase64String(de);
 			System.out.println("秘钥："+s);
     		// 生成秘钥

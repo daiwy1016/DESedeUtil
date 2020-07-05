@@ -1,173 +1,160 @@
-package NdSecret.nd.secret.util;
+import java.text.BreakIterator;
 
-import java.io.UnsupportedEncodingException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.KeyGenerator;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.DESedeKeySpec;
 import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import org.apache.commons.codec.binary.Base64;
 
-public class DESede
-{
-  private String algorithm = "DESede/CBC/PKCS7Padding";
-  private String charset = "utf-8";
-  private SecretKey key;
-  private SecretKeyFactory keyFactory;
-  private KeySpec keySpec;
-  
-  public DESede()
-  {
-    try
-    {
-      this.key = KeyGenerator.getInstance("DESede").generateKey();
-      return;
+import org.json.JSONException;
+import org.json.JSONObject;
+ 
+/**
+ * DESede Encrypt/Decrypt class
+ */
+public class DESede extends BaseMethod{
+ 
+    public static void main(String[] args) throws Exception {
+      //Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+      JSONObject localJSONObject = new org.json.JSONObject();
+      localJSONObject.put("a", 1);
+      System.out.println(localJSONObject.toString().getBytes("utf-8"));
+
+      System.out.println( Base64.encodeBase64String(toLH(20000122)));
+      first: {
+        System.out.println("First statement");
+        for (int i = 0; i < 3; i++) {
+            System.out.println("Second statement");
+            break first;
+        }
     }
-    catch (NoSuchAlgorithmException localNoSuchAlgorithmException)
-    {
-      for (;;)
-      {
-        localNoSuchAlgorithmException.printStackTrace();
-      }
+System.out.println("end");
+
+//       HashParam localHashParam = new HashParam();
+//       localHashParam.putParam("UserName", "userName");
+//       localHashParam.putParam("Password", "123");
+//       localHashParam.putParam("NickName", "abc");
+
+// System.out.println(localHashParam);
+
+
+  System.out.println("==============================" );
+
+        DESede desede = new DESede();
+        // 加解密 密钥
+ 
+//         byte[] keybytes = {(byte)0x87,(byte)0xe9,(byte)0x11,(byte)0xfe,(byte)0x82,(byte)0xce,(byte)0x8d,'S',(byte)0x08,';','9',(byte)0xd2,(byte)0xbf,'x',(byte)0x03,(byte)0x95,(byte)0x15,(byte)0x99,(byte)0xc2,(byte)0x02,(byte)0x9c,(byte)0xcb,(byte)0xaa,(byte)0xd7,'G',(byte)0x16,(byte)0xd8,(byte)0xae,(byte)0x15,'7','U',(byte)0xdb};
+        byte[] keybytes = {(byte)0x87,(byte)0xe9,(byte)0x11,(byte)0xfe,(byte)0x82,(byte)0xce,(byte)0x8d,'S',(byte)0x08,';','9',(byte)0xd2,(byte)0xbf,'x',(byte)0x03,(byte)0x95,(byte)0x15,(byte)0x99,(byte)0xc2,(byte)0x02,(byte)0x9c,(byte)0xcb,(byte)0xaa,(byte)0xd7};
+        byte[] ivbytes = {(byte)0x87,(byte)0xe9,(byte)0x11,(byte)0xfe,(byte)0x82,(byte)0xce,(byte)0x8d,'S'};
+        //加密字符串
+        String content = "{\"Kcv\":\"123456\",\"IDc\":\"User1\",\"IDo\":\"DataOwner1\",\"IDv\":\"222\",\"TS4\":\"1564657964010\",\"lifetime4\":\"657964010\","
+                + "\"AC\":{\"IDc\":\"User1\",\"permission\":{\"Folder_pdf\":{\"Folder_pdf\":[0,1,1,1]}," +
+                "\"Folder_txt\":{\"Folder_txt\":[0,1,0,0],\"xiaohua.txt\":[0,1,1]}}}}";
+//        String content = "Hello, 韩- 梅 -梅";
+        System.out.println("加密前的：" + content);
+//        String key = Base64.getEncoder().encodeToString(keybytes);
+//        System.out.println("加密密钥：" + key);
+        System.out.println("加密密钥：" + new String(keybytes));
+        // 加密方法
+        String enc = desede.encrypt(Method.DESEDE_CBC_PKCS7Padding, keybytes, ivbytes, content.getBytes());
+//        String encode = new BASE64Encoder().encode(enc);
+ 
+ 
+        System.out.println("加密后的内容：" + enc);
+//        System.out.println("加密后的内容：" + new String(Hex.encode(enc)));
+ 
+        // 解密方法
+//        byte[] bytes = new BASE64Decoder().decodeBuffer(enc);
+        String dec = desede.decrypt(Method.DESEDE_CBC_PKCS7Padding,keybytes, Key.SIZE_192,ivbytes, enc.getBytes());
+        System.out.println("解密后的内容：" + dec);
     }
-  }
-  
-  public DESede(String paramString)
-  {
-    try
-    {
-      initKey(paramString.getBytes(this.charset));
-      return;
+ 
+    private static final int VECTOR_LEGHT = 8;
+ 
+    /**
+     * All supported methods
+     */
+    public enum Method{
+        DESEDE ("DESEDE"),
+        DESEDE_CBC_NoPadding ("DESEDE/CBC/NoPadding"),
+        DESEDE_CBC_PKCS5Padding ("DESEDE/CBC/PKCS5Padding"),
+        DESEDE_CBC_PKCS7Padding ("DESEDE/CBC/PKCS7Padding"),
+        DESEDE_CBC_ISO10126Padding ("DESEDE/CBC/ISO10126Padding");
+ 
+        private final String method;
+ 
+        Method(String method) {
+            this.method = method;
+        }
+ 
+        public String getMethod() {
+            return method;
+        }
     }
-    catch (UnsupportedEncodingException paramString)
-    {
-      for (;;)
-      {
-        paramString.printStackTrace();
-      }
+    
+  public static byte[] toLH(int paramInt)
+  {
+    return new byte[] { (byte)(paramInt & 0xFF), (byte)(paramInt >> 8 & 0xFF), (byte)(paramInt >> 16 & 0xFF), (byte)(paramInt >> 24 & 0xFF) };
+  }
+ 
+    /**
+     * Keysize must be equal to 128 or 192 bits.
+     * Default Keysize equals 128 bits.
+     */
+    public enum Key{
+        SIZE_128 (16),
+        SIZE_192 (24);
+ 
+        private final int size;
+ 
+        Key(int size) {
+            this.size = size;
+        }
     }
-  }
-  
-  public DESede(byte[] paramArrayOfByte)
-  {
-    initKey(paramArrayOfByte);
-  }
-  
-  private static IvParameterSpec IvGenerator(byte[] paramArrayOfByte)
-  {
-    byte[] arrayOfByte = new byte[8];
-    System.arraycopy(paramArrayOfByte, 0, arrayOfByte, 0, 8);
-    return new IvParameterSpec(arrayOfByte);
-  }
-  
-  private void initKey(byte[] paramArrayOfByte)
-  {
-    try
-    {
-      this.keyFactory = SecretKeyFactory.getInstance("DESede");
-      DESedeKeySpec localDESedeKeySpec = new javax.crypto.spec.DESedeKeySpec();
-      localDESedeKeySpec.init(updateKey(paramArrayOfByte));
-      this.keySpec = localDESedeKeySpec;
-      this.key = this.keyFactory.generateSecret(this.keySpec);
-      return;
+ 
+    /**
+     * Implementation of DESede encryption
+     */
+//    public static String encrypt(Method method, byte[] key, Key keySize, byte[] vector, byte[] message) throws Exception{
+ 
+    public static String encrypt(Method method, byte[] key, byte[] vector, byte[] message) throws Exception{
+//        generate Key
+//        byte[] keyBytes = generateKey(key, keySize.size);
+        SecretKeySpec keySpec = new SecretKeySpec(key, method.getMethod());
+ 
+//        generate Initialization Vector
+//        byte[] keyBytesIv = generateVector(vector, VECTOR_LEGHT);
+        IvParameterSpec ivSpec = new IvParameterSpec(vector);
+ 
+        Cipher cipher = Cipher.getInstance(method.getMethod());
+        cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
+        byte[] cipherText = cipher.doFinal(message);
+ 
+        String encodeCipertext = Base64.encodeBase64String(cipherText);
+//        System.out.println(encodeCipertext);
+ 
+        return encodeCipertext;
     }
-    catch (InvalidKeyException paramArrayOfByte)
-    {
-      for (;;)
-      {
-        paramArrayOfByte.printStackTrace();
-      }
+ 
+    /**
+     * Implementation of DESede decryption
+     */
+    public static String decrypt(Method method, byte[] key, Key keySize, byte[] vector, byte[] message) throws Exception{
+ 
+//        generate Key
+        byte[] keyBytes = generateKey(key, keySize.size);
+        SecretKeySpec keySpec = new SecretKeySpec(keyBytes, method.getMethod());
+ 
+//        generate Initialization Vector
+        byte[] keyBytesIv = generateVector(vector, VECTOR_LEGHT);
+        IvParameterSpec ivSpec = new IvParameterSpec(keyBytesIv);
+ 
+        Cipher cipher = Cipher.getInstance(method.getMethod());
+        cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
+//        byte[] cipherText = cipher.doFinal(Base64.decode(message, Base64.DEFAULT));
+        byte[] cipherText = cipher.doFinal(Base64.decodeBase64(message));
+ 
+        return new String(cipherText);
     }
-    catch (InvalidKeySpecException paramArrayOfByte)
-    {
-      for (;;)
-      {
-        paramArrayOfByte.printStackTrace();
-      }
-    }
-    catch (NoSuchAlgorithmException paramArrayOfByte)
-    {
-      for (;;)
-      {
-        paramArrayOfByte.printStackTrace();
-      }
-    }
-  }
-  
-  private byte[] updateKey(byte[] paramArrayOfByte)
-  {
-    int i = paramArrayOfByte.length;
-    byte[] arrayOfByte1 = paramArrayOfByte;
-    if (paramArrayOfByte.length < 24)
-    {
-      arrayOfByte1 = new byte[24];
-      byte[] arrayOfByte2 = new byte[24 - i];
-      for (int j = 0; j < 24 - i; j++) {
-        arrayOfByte2[j] = ((byte)0);
-      }
-      System.arraycopy(paramArrayOfByte, 0, arrayOfByte1, 0, i);
-      System.arraycopy(arrayOfByte2, 0, arrayOfByte1, i, 24 - i);
-    }
-    return arrayOfByte1;
-  }
-  
-  public byte[] decrypt(byte[] paramArrayOfByte)
-    throws Exception
-  {
-    IvParameterSpec localIvParameterSpec = IvGenerator(this.key.getEncoded());
-    Cipher localCipher = Cipher.getInstance(this.algorithm);
-    localCipher.init(2, this.key, localIvParameterSpec);
-    return localCipher.doFinal(paramArrayOfByte);
-  }
-  
-  public String decryptStr(byte[] paramArrayOfByte)
-    throws Exception
-  {
-    return new String(decrypt(paramArrayOfByte), this.charset);
-  }
-  
-  public byte[] encrypt(byte[] paramArrayOfByte)
-    throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, Exception
-  {
-    IvParameterSpec localIvParameterSpec = IvGenerator(this.key.getEncoded());
-    Cipher localCipher = Cipher.getInstance(this.algorithm);
-    localCipher.init(1, this.key, localIvParameterSpec);
-    return localCipher.doFinal(paramArrayOfByte);
-  }
-  
-  public byte[] encryptStr(String paramString)
-    throws InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException, BadPaddingException, IllegalBlockSizeException, Exception
-  {
-    return encrypt(paramString.getBytes(this.charset));
-  }
-  
-  public String getCharset()
-  {
-    return this.charset;
-  }
-  
-  public byte[] getKey()
-  {
-    return this.key.getEncoded();
-  }
-  
-  public void setCharset(String paramString)
-  {
-    this.charset = paramString;
-  }
-   public static byte[] a(byte[] p1, byte[] p2)
-   {
-     Security.addProvider(new BouncyCastleProvider());
-     SecretKeySpec localSecretKeySpec = new SecretKeySpec(p1, "AES");
-     Cipher localCipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
-     localCipher.init(2, localSecretKeySpec, new IvParameterSpec(a));
-     return localCipher.doFinal(p2);
-   }
+ 
+ 
 }
