@@ -8,11 +8,73 @@ import java.security.Key;
 import java.math.*;
 import java.security.*;
 import java.security.spec.*;
+import javax.crypto.Cipher;
 import javax.crypto.*;
 import java.io.*;
 
+
 public class RSAmy
 {  
+
+  /**
+	* 加密
+	* @param key 加密的密钥
+	* @param data 待加密的明文数据
+	* @return 加密后的数据
+	* @throws Exception
+	*/
+	public static byte[] encrypt_byte(Key key, byte[] data) throws Exception {
+		try {
+			Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding", new org.bouncycastle.jce.provider.BouncyCastleProvider());
+			cipher.init(Cipher.ENCRYPT_MODE, key);
+			//获得加密块大小，如:加密前数据为128个byte，而key_size=1024 加密块大小为127 byte,加密后为128个byte;
+			//因此共有2个加密块，第一个127 byte第二个为1个byte
+			int blockSize = cipher.getBlockSize();
+			int outputSize = cipher.getOutputSize(data.length);//获得加密块加密后块大小
+			int leavedSize = data.length % blockSize;
+			int blocksSize = leavedSize != 0 ? data.length / blockSize + 1 : data.length / blockSize;
+			byte[] raw = new byte[outputSize * blocksSize];
+			int i = 0;
+			while (data.length - i * blockSize > 0) {
+				if (data.length - i * blockSize > blockSize)
+				cipher.doFinal(data, i * blockSize, blockSize, raw, i * outputSize);
+				else
+				cipher.doFinal(data, i * blockSize, data.length - i * blockSize, raw, i * outputSize);
+				//这里面doUpdate方法不可用，查看源代码后发现每次doUpdate后并没有什么实际动作除了把byte[]放到ByteArrayOutputStream中
+				//，而最后doFinal的时候才将所有的byte[]进行加密，可是到了此时加密块大小很可能已经超出了OutputSize所以只好用dofinal方法。
+				i++;
+			}
+			return raw;
+		} catch (Exception e) {
+		throw new Exception(e.getMessage());
+		}
+	}
+  	/**
+	* 解密
+	* @param key 解密的密钥
+	* @param raw 已经加密的数据
+	* @return 解密后的明文
+	* @throws Exception
+	*/
+	public static byte[] decrypt_byte(Key key, byte[] raw) throws Exception {
+		try {
+			Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding", new org.bouncycastle.jce.provider.BouncyCastleProvider());
+			cipher.init(cipher.DECRYPT_MODE, key);
+			int blockSize = cipher.getBlockSize();
+			ByteArrayOutputStream bout = new ByteArrayOutputStream(64);
+			int j = 0;
+			while (raw.length - j * blockSize > 0) {
+				bout.write(cipher.doFinal(raw, j * blockSize, blockSize));
+				j++;
+			}
+			return bout.toByteArray();
+		} catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+	}
+	
+
+
   public static byte[] encrypt_my(Key pk, byte[] paramArrayOfByte)
   {
     try
@@ -20,7 +82,7 @@ public class RSAmy
       Cipher localCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
       localCipher.init(1, pk);
       System.out.println(localCipher);
-      int i = 6;//localCipher.getBlockSize();
+      int i = localCipher.getBlockSize();
       int j = localCipher.getOutputSize(paramArrayOfByte.length);
       int kk = 0;
       System.out.println(i);
@@ -57,9 +119,9 @@ public class RSAmy
   {
     try
     {
-      Cipher localCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+      Cipher localCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");//
       localCipher.init(2, pk);
-      int i = 6 ;//localCipher.getBlockSize();
+      int i = localCipher.getBlockSize();
       ByteArrayOutputStream pkey = new java.io.ByteArrayOutputStream(64);
       for (int j = 0; paramArrayOfByte.length - j * i > 0; j++) {
         pkey.write(localCipher.doFinal(paramArrayOfByte, j * i, i));
@@ -88,16 +150,43 @@ public class RSAmy
 */
 //System.out.println(myhex.byte2hex(getRsaPrivateKey().getEncoded()));
 
-RSAPrivateKey myprikey = RSA.generateRSAPrivateKey(myhex.hex2byte("305c300d06092a864886f70d0101010500034b0030480241009badb9c1eb9693a78ed1ba44e5deb8f2db92daa3d761434769defbfb8ac92e798d83ad671a91b1939fb00d80cdd76c965086fe42c48e852b20b054c3fd0776010203010001"),myhex.hex2byte("010001"));
-System.out.println(myprikey);
-RSAPublicKey mypubkey = RSA.generateRSAPublicKey(myhex.hex2byte("30820154020100300d06092a864886f70d01010105000482013e3082013a0201000241009badb9c1eb9693a78ed1ba44e5deb8f2db92daa3d761434769defbfb8ac92e798d83ad671a91b1939fb00d80cdd76c965086fe42c48e852b20b054c3fd077601020301000102404b31bb629e4f69dc6a10853f1824df0276ea54ef046e3757fc1c376c055a2d36ca377248109a99d61e6bd0e739a2f415946c36d6a5daeb24d7688a00fdbb5e9d022100c8dc90832f083230aafa03d4b31844f32f07754b365c30e36c08d22453308a9f022100c669f4182a0bb2a3287415892dfc13f0cbced80f93aee78051d367787fd2db5f02206d2d260787fae67cf992279ee731dbd86ac99d01a2ac7d8e3fdc938c57035d75022100b5349ccdd8d078241454f83a217a1f8801ca757ebc64b75e74dc7a9a0d3b384702205fee599a72678b866edca5cf4f17884ca0ddd9519113ae1ff784f6aea92c6889"),myhex.hex2byte("010001"));
-System.out.println(mypubkey);
-System.out.println("============");
+KeyPair keyPair = NdSecret.nd.secret.util.RSA.generateKeyPair();
+RSAPublicKey pubKey = (RSAPublicKey) keyPair.getPublic();
+byte[] pubModBytes = pubKey.getModulus().toByteArray();
+System.out.println(myhex.byte2hex(pubModBytes));
+//返回公钥公用指数(字节数组形式)
+byte[] pubPubExpBytes = pubKey.getPublicExponent().toByteArray();
+System.out.println(myhex.byte2hex(pubPubExpBytes));
 
-byte[] miwen = encrypt_my(mypubkey,myhex.hex2byte("313233"));
-System.out.println(myhex.byte2hex(miwen));
-System.out.println(decrypt_my(myprikey,miwen));
-System.out.println("============");
+RSAPrivateKey priKey = (RSAPrivateKey) keyPair.getPrivate();
+
+byte[] priModBytes = priKey.getModulus().toByteArray();
+System.out.println(myhex.byte2hex(priModBytes));
+//返回私钥专用指数(字节数组形式)
+byte[] priPriExpBytes = priKey.getPrivateExponent().toByteArray();
+System.out.println(myhex.byte2hex(priPriExpBytes));
+
+
+
+System.out.println(pubKey);
+System.out.println(priKey);
+System.out.println("=====1111=======");
+
+
+RSAPublicKey mypubkey = NdSecret.nd.secret.util.RSA.generateRSAPublicKeyHex("815afc844ee0252febc27fa5b0f6d895f5c3693d0b0afaa5e405524a2ef0a417ee911d6d3551eb98108d12f5bfe7a26818c7ac33815abd5d3afa1f234f829315","10001");
+System.out.println(mypubkey);
+RSAPrivateKey myprikey = NdSecret.nd.secret.util.RSA.generateRSAPrivateKey("815afc844ee0252febc27fa5b0f6d895f5c3693d0b0afaa5e405524a2ef0a417ee911d6d3551eb98108d12f5bfe7a26818c7ac33815abd5d3afa1f234f829315","6576c707c90ecc5c906319d90fbc301b40912ce532da43cd07d49cbd8fa0363569d364664104fcb80a60f5975109ae46b0f2c2b27d6946f2a80de90ccbd91e01");
+System.out.println(myprikey);
+System.out.println("=====2222=======");
+
+
+       
+System.out.println("======生成完毕======");
+String str = "董利伟";
+byte[] mw = encrypt_byte(mypubkey,str.getBytes());
+System.out.println(myhex.byte2hex(mw));
+
+System.out.println(new String(decrypt_byte(myprikey, mw)));
 
     // String RsaModelHex = "df4babe2c26727e7a290c582de785032291ce061f274fc8e998c6e3e9cd3b5d137e3588cfa49c5003d630684f1ca1c3ccb7bf93c464b1d2802838bfe3ad970f1";
     // Key puKey = RSA.generateRSAPublicKeyHex(RsaModelHex, "10001");
@@ -145,13 +234,13 @@ System.out.println("============");
     // System.out.println("private_key");
     // System.out.println(private_key);
 
-
-       KeyPair kp = RSA.generateKeyPair();
+/*
+       KeyPair kp = NdSecret.nd.secret.util.RSA.generateKeyPair();
        System.out.println(kp.getPublic());
        System.out.println(kp.getPrivate());
        System.out.println("============");
        System.out.println(myhex.byte2hex(kp.getPublic().getEncoded()));
-       System.out.println(myhex.byte2hex(kp.getPrivate().getEncoded()));
+       System.out.println(myhex.byte2hex(kp.getPrivate().getEncoded()));*/
 
 
     //public static final String RSA_MODEL_HEX = "B38B9F5D42DEF0BDEF067D3009B1E92475E130399C9DC7CC31F0361D6581D0245CB3AE5664D9337D9370C5CC842D9362F4F51A259DDF928080457A40E682A2BB";
