@@ -60,7 +60,9 @@ public class RSAmy
 		try {
 			Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding", new org.bouncycastle.jce.provider.BouncyCastleProvider());
 			cipher.init(cipher.DECRYPT_MODE, key);
-			int blockSize = cipher.getBlockSize();
+      int blockSize = cipher.getBlockSize();
+      System.out.println("blockSize：");
+      System.out.println(blockSize);
 			ByteArrayOutputStream bout = new ByteArrayOutputStream(64);
 			int j = 0;
 			while (raw.length - j * blockSize > 0) {
@@ -170,24 +172,47 @@ System.out.println(myhex.byte2hex(priPriExpBytes));
 
 System.out.println(pubKey);
 System.out.println(priKey);
+System.out.println(myhex.byte2hex(pubKey.getEncoded()));
+System.out.println(myhex.byte2hex(priKey.getEncoded()));
 System.out.println("=====1111=======");
 
 
-RSAPublicKey mypubkey = NdSecret.nd.secret.util.RSA.generateRSAPublicKeyHex("815afc844ee0252febc27fa5b0f6d895f5c3693d0b0afaa5e405524a2ef0a417ee911d6d3551eb98108d12f5bfe7a26818c7ac33815abd5d3afa1f234f829315","10001");
+RSAPublicKey mypubkey = NdSecret.nd.secret.util.RSA.generateRSAPublicKeyHex("80E458976B4DCC6AC1CA6E9B06A838858666D69A547387063502B0116A7CAA6FC67ADFF72EFFA6660B6703A1883FF70D5E42DACC4B0536E60FC76E629D01C1D5","10001");
 System.out.println(mypubkey);
-RSAPrivateKey myprikey = NdSecret.nd.secret.util.RSA.generateRSAPrivateKey("815afc844ee0252febc27fa5b0f6d895f5c3693d0b0afaa5e405524a2ef0a417ee911d6d3551eb98108d12f5bfe7a26818c7ac33815abd5d3afa1f234f829315","6576c707c90ecc5c906319d90fbc301b40912ce532da43cd07d49cbd8fa0363569d364664104fcb80a60f5975109ae46b0f2c2b27d6946f2a80de90ccbd91e01");
+
+System.out.println(myhex.byte2hex(mypubkey.getEncoded()));
+
+
+RSAPrivateKey myprikey = NdSecret.nd.secret.util.RSA.generateRSAPrivateKey("80E458976B4DCC6AC1CA6E9B06A838858666D69A547387063502B0116A7CAA6FC67ADFF72EFFA6660B6703A1883FF70D5E42DACC4B0536E60FC76E629D01C1D5","43713839e2d7ce827dec627b93bc29f71420736245963dacadc83e409eaba4b221db2bf53a8ad98940753a5190d455cabf4a443b835b1043e08fa94100058181");
 System.out.println(myprikey);
+
+System.out.println(myhex.byte2hex(myprikey.getEncoded()));
 System.out.println("=====2222=======");
 
 
        
 System.out.println("======生成完毕======");
 String str = "董利伟";
-byte[] mw = encrypt_byte(mypubkey,str.getBytes());
+byte[] mw = encrypt_byte(mypubkey,str.getBytes("UTF-8"));
 System.out.println(myhex.byte2hex(mw));
+
+//byte[] mw2 = myhex.hex2byte("0B6AE4002169659CDC1E6D51CAB6BE69A65A356A3146EF630D6212CE622364E1C9FDC95E1BDD8EAA5538584251F5FCF35FC6F474274A7EB941A52E8A290055D8");
+
 
 System.out.println(new String(decrypt_byte(myprikey, mw)));
 
+System.out.println("======我希望从Objective-C中的模数和指数生成一个rsa公钥（pem）。此函数可以通过以下方式在Java中完成;======");
+
+
+
+
+/*
+BigInteger modulus = new BigInteger("6774892840142173964589783832153601559962712227004236711983985045296945469228789709608650154632528834341105198110666431914100213959279079367170968281846549");
+BigInteger exponent = new BigInteger("10001");
+
+
+PublicKey pk_publicKey = KeyFactory.getInstance("RSA").generatePublic(new RSAPublicKeySpec(modulus, exponent));
+System.out.println(pk_publicKey);*/
     // String RsaModelHex = "df4babe2c26727e7a290c582de785032291ce061f274fc8e998c6e3e9cd3b5d137e3588cfa49c5003d630684f1ca1c3ccb7bf93c464b1d2802838bfe3ad970f1";
     // Key puKey = RSA.generateRSAPublicKeyHex(RsaModelHex, "10001");
     // System.out.println(myhex.byte2hex(puKey.getEncoded()));
