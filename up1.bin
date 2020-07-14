@@ -1,0 +1,36 @@
+<?php
+$data = file_get_contents("body_bin");
+$hex_data = bin2hex($data) ;
+var_dump($hex_data);
+$head = substr($hex_data,0,32*2);
+$body = hex2bin(substr($hex_data,32*2));
+var_dump($head);
+var_dump($body);
+
+
+$encryptType = (int)base_convert(substr($head,0,1*2),16,10);
+
+var_dump(substr($head,1*2,2*2));
+
+$act = (int)base_convert(substr($head,1*2,2*2),16,10);
+$errorCode = unpack("L",hex2bin(substr($head,3*2,4*2)))[1];
+$checkCode = (int)base_convert(substr($head,7*2,1*2),16,10);
+
+$checkMD5 = hex2bin(substr($head,8*2,4*2));
+$bodyMD5 = md5($body);
+$check = substr($bodyMD5,$checkCode ,4);
+
+
+var_dump($encryptType,$act,$errorCode,$checkCode,$checkMD5,$bodyMD5,$check);
+
+
+//以上是分析
+//一下构建
+
+$pubKey_arr =  [
+    'PubKey'=>'df4babe2c26727e7a290c582de785032291ce061f274fc8e998c6e3e9cd3b5d137e3588cfa49c5003d630684f1ca1c3ccb7bf93c464b1d2802838bfe3ad970f1'
+];
+
+var_dump(json_encode($pubKey_arr,JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+file_put_contents("1.txt", json_encode($pubKey_arr,JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+
